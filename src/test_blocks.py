@@ -106,6 +106,19 @@ This is another paragraph with _italic_ text and `code` here
             html,
             "<div><blockquote>This is a quote</blockquote><blockquote>This is another quote</blockquote></div>",
         )
+        
+    def test_multiple_quotes(self):
+        md = """
+> "I am in fact a Hobbit in all but size."
+>
+> -- J.R.R. Tolkien
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            '<div><blockquote>"I am in fact a Hobbit in all but size." -- J.R.R. Tolkien</blockquote></div>',
+        )
 
     def test_unordered_list(self):
         md = """
@@ -120,6 +133,19 @@ This is another paragraph with _italic_ text and `code` here
         self.assertEqual(
             html,
             "<div><ul><li>This is an unordered list item</li><li>Another item</li></ul><ul><li>Yet another item</li></ul></div>",
+        )
+    
+    def test_unordered_list_with_nested_items(self):
+        md = """
+- [Why Glorfindel is More Impressive than Legolas](/blog/glorfindel)
+- [Why Tom Bombadil Was a Mistake](/blog/tom)
+- [The Unparalleled Majesty of "The Lord of the Rings"](/blog/majesty)
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li><a href=\"/blog/glorfindel\">Why Glorfindel is More Impressive than Legolas</a></li><li><a href=\"/blog/tom\">Why Tom Bombadil Was a Mistake</a></li><li><a href=\"/blog/majesty\">The Unparalleled Majesty of \"The Lord of the Rings\"</a></li></ul></div>",
         )
 
     def test_ordered_list(self):

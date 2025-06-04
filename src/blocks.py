@@ -66,19 +66,31 @@ def markdown_to_html_node(markdown):
                     ParentNode("pre", [LeafNode("code", strip_code_block(block))])
                 )
             case BlockType.QUOTE:
-                block_strip_quote_sign = block.lstrip(">").strip()
+                quotes = block.split("\n")
+                block_strip_quote_sign = [
+                    quote.lstrip(">").strip() for quote in quotes if quote.strip()
+                ]
+                block_strip_quote_sign = " ".join(
+                    quote for quote in block_strip_quote_sign if quote.strip()
+                )
                 html_blocks.append(
                     ParentNode("blockquote", text_to_children(block_strip_quote_sign))
                 )
             case BlockType.UNORDERED_LIST:
                 items = block.split("\n")
                 items = [item.lstrip("-").strip() for item in items if item.strip()]
-                list_items = [LeafNode("li", item) for item in items]
+                list_items = [
+                    ParentNode("li", text_to_children(item)) for item in items
+                ]
                 html_blocks.append(ParentNode("ul", list_items))
             case BlockType.ORDERED_LIST:
                 items = block.split("\n")
-                items = [item.lstrip("0123456789.").strip() for item in items if item.strip()]
-                list_items = [LeafNode("li", item) for item in items]
+                items = [
+                    item.lstrip("0123456789.").strip() for item in items if item.strip()
+                ]
+                list_items = [
+                    ParentNode("li", text_to_children(item)) for item in items
+                ]
                 html_blocks.append(ParentNode("ol", list_items))
             case _:
                 raise ValueError(f"Unknown block type: {block_type}")
