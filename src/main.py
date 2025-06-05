@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import re
+import sys
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
@@ -10,7 +12,7 @@ import textnode as tnd
 from blocks import markdown_to_html_node
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath="/"):
     logging.info(
         f"Generating page from {from_path} to {dest_path} using template {template_path}"
     )
@@ -30,6 +32,8 @@ def generate_page(from_path, template_path, dest_path):
 
     # Render with your data
     html_file = template.render(Title=title, Content=html_content)
+    html_file = re.sub(r'href="/', f'href="{basepath}', html_file)
+    html_file = re.sub(r'src="/', f'src="{basepath}', html_file)
 
     # create destination directory if it does not exist
     dest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -105,7 +109,7 @@ def gather_markdown_files(dir_path):
     return markdown_files
 
 
-def generate_pages_recursive(source, template_path, destination):
+def generate_pages_recursive(source, template_path, destination, basepath="/"):
     if not source.exists():
         raise FileNotFoundError(f"Source directory {source} does not exist.")
     if not template_path.exists():
@@ -122,6 +126,7 @@ def generate_pages_recursive(source, template_path, destination):
                 from_path=markdown_file,
                 template_path=template_path,
                 dest_path=dest_path,
+                basepath=basepath,
             )
             logging.info(f"Generated HTML page for {markdown_file}")
         except Exception as e:
@@ -137,9 +142,14 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = "/"
+
     logging.info("Starting static asset provisioning...")
     static_source = Path("static")
-    destination = Path("public")
+    destination = Path("docs")
 
     try:
         provision_static_assets(static_source, destination)
@@ -157,6 +167,7 @@ def main():
         source=content_source,
         template_path=template_file,
         destination=destination,
+        basepath=basepath,
     )
 
 
